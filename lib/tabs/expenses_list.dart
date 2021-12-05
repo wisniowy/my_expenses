@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_expenses/expense.dart';
+import 'package:my_expenses/expenses_types.dart';
 
 class ExpensesList extends StatefulWidget {
   const ExpensesList({Key? key}) : super(key: key);
@@ -14,6 +15,11 @@ class _ExpensesListState extends State<ExpensesList> {
       15,
       (index) =>
           new Expense(index.toDouble(), "2021-", "mock" + index.toString()));
+
+  final List<ExpenseType> _filter = [ExpenseType.food, ExpenseType.transportation,
+    ExpenseType.utilities, ExpenseType.healthcare, ExpenseType.fun];
+  final List<bool> _selectedFilters = [false, false, false, false, false];
+
   bool isLoading = false;
   int page = 0;
 
@@ -85,7 +91,72 @@ class _ExpensesListState extends State<ExpensesList> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: _buildList());
+    // return Container(child: _buildList());
+
+    return  Column(
+    children: [
+    const SizedBox(
+    height: 30,
+    ),
+      Row(
+        children: [SizedBox(width: 10,),
+          _createFilterChip(0),
+          SizedBox(width: 8,),
+          _createFilterChip(1),
+          SizedBox(width: 8,),
+          _createFilterChip(2),
+          SizedBox(width: 8,)]
+      ),
+      Row(
+        children: [SizedBox(width: 10,),
+          _createFilterChip(3),
+          SizedBox(width: 8,),
+        _createFilterChip(4),
+          SizedBox(width: 8,)]
+      ),
+      // Row(
+      //   children: [for (int i = 4; i < _filter.length; i++) _createFilterChip(i)],
+      // ),
+    const SizedBox(
+    height: 2,
+    ),
+      Expanded(child: _buildList())
+    ]);
+  }
+
+  FilterChip _createFilterChip(int index) {
+    return FilterChip(
+      label: Text(_filter[index].str(),
+          style: TextStyle(
+              color: _selectedFilters[index]
+                  ? Theme.of(context).primaryColor.withOpacity(0.9)
+                  : Colors.black45)),
+      showCheckmark: false,
+      // selectedColor: Theme.of(context).primaryColor,
+      avatar: CircleAvatar(
+          backgroundColor: Colors.transparent,
+          child: Icon(_filter[index].icon(),
+              color: _selectedFilters[index]
+                  ? Theme.of(context).primaryColor.withOpacity(0.5)
+                  : Colors.black38,
+              size: 22)),
+
+      padding: const EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
+      labelPadding: const EdgeInsets.only(left: 0, right: 10),
+      shape: StadiumBorder(
+          side: BorderSide(
+              color: _selectedFilters[index]
+                  ? Theme.of(context).primaryColor.withOpacity(0.5)
+                  : Colors.black38)),
+      onSelected: (bool value) {
+        setState(() {
+          _selectedFilters[index] = value;
+        });
+      },
+      // backgroundColor: Colors.transparent,
+      selected: _selectedFilters[index],
+      // shape: StadiumBorder(side: BorderSide()),
+    );
   }
 
   Future<void> _getMoreData(int index) async {
