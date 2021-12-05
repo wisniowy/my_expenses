@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_expenses/tabs/expenses_list.dart';
 
 import 'expandable_fab.dart';
 import 'nav_bar.dart';
@@ -37,10 +38,22 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIdx = 1;
 
+  final List _children = [
+    PlaceholderWidget(Colors.white),
+    ExpensesList(),
+    PlaceholderWidget(Colors.green)
+  ];
+
+  void onTabTapped(int index) {
+    setState(() {
+      _selectedIdx = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(),
+      body: _children[_selectedIdx],
         floatingActionButton: ExpandableFab(
             distance: 70.0,
             children: [
@@ -58,30 +71,34 @@ class _MyHomePageState extends State<MyHomePage> {
               text: "Charts",
               icon: Icons.insert_chart,
               selected: _selectedIdx == 0,
-              onPressed: () {
-                setState(() {
-                  _selectedIdx = 0;
-                });
-              }),
+              onPressed: () => onTabTapped(0)
+          ),
             IconBottomBar(
                 text: "Home",
                 icon: Icons.home,
                 selected: _selectedIdx == 1,
-                onPressed: () {
-                  setState(() {
-                    _selectedIdx = 1;
-                  });
-                }),
+                onPressed: () => onTabTapped(1)
+            ),
             IconBottomBar(
                 text: "Settings",
                 icon: Icons.settings,
                 selected: _selectedIdx == 2,
-                onPressed: () {
-                  setState(() {
-                    _selectedIdx = 2;
-                  });
-                })
+                onPressed: () => onTabTapped(2)
+            )
           ],
         ));
+  }
+}
+
+class PlaceholderWidget extends StatelessWidget {
+  final Color color;
+
+  PlaceholderWidget(this.color);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+    );
   }
 }
