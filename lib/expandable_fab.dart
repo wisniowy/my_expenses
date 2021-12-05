@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 @immutable
@@ -137,7 +135,8 @@ class _ExpandableFabState extends State<ExpandableFab>
             width: 55,
             child: FloatingActionButton(
               onPressed: _toggle,
-              backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.black45,
+                backgroundColor: Theme.of(context).primaryColor,
               child: const Icon(Icons.add),
             ),
           ),
@@ -146,7 +145,6 @@ class _ExpandableFabState extends State<ExpandableFab>
     );
   }
 }
-
 
 @immutable
 class ActionButton extends StatelessWidget {
@@ -172,6 +170,7 @@ class ActionButton extends StatelessWidget {
         child: IconButton(
           onPressed: onPressed,
           icon: icon,
+          color: Colors.black45,
         ),
       ),
     );
