@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:my_expenses/expense.dart';
 import 'package:my_expenses/expenses_types.dart';
@@ -11,22 +13,58 @@ class ExpensesList extends StatefulWidget {
 
 class _ExpensesListState extends State<ExpensesList> {
   ScrollController _sc = new ScrollController();
-  List<Expense> expenses = List.generate(
+  List<Expense> _allExpenses = List.generate(
       15,
       (index) =>
-          new Expense(index.toDouble(), "2021-", "mock" + index.toString()));
+          new Expense(index, index.toDouble(), "2021-", "mock" + index.toString(), [ExpenseType.fun]));
+
+
+  LinkedHashMap<int, Expense> _filteredExpenses = LinkedHashMap();
+
 
   final List<ExpenseType> _filter = [ExpenseType.food, ExpenseType.transportation,
     ExpenseType.utilities, ExpenseType.healthcare, ExpenseType.fun];
   final List<bool> _selectedFilters = [false, false, false, false, false];
+  List<ExpenseType> _openedFilters = List.empty();
 
   bool isLoading = false;
   int page = 0;
 
   @override
   void initState() {
+    _buildExpenseMap(_allExpenses);
     _sc.addListener(_onScroll);
     super.initState();
+  }
+
+  void _buildExpenseMap(List<Expense> expenses) {
+    _filteredExpenses.clear();
+
+    for (Expense ex in expenses) {
+      _filteredExpenses.putIfAbsent(ex.id, () => ex);
+    }
+  }
+
+  void _runFilter() {
+    print(_openedFilters.toString());
+    if (_openedFilters.isEmpty) {
+      _buildExpenseMap(_allExpenses);
+      print(_filteredExpenses.toString());
+      return;
+    }
+
+    LinkedHashMap<int, Expense> resMap = new LinkedHashMap();
+    for (ExpenseType expenseType in _openedFilters) {
+      List<Expense> result = _allExpenses
+          .where((element) => element.types.contains(expenseType))
+          .toList();
+
+      for (Expense ex in result) {
+        resMap.putIfAbsent(ex.id, () => ex);
+      }
+    }
+
+    _filteredExpenses = resMap;
   }
 
   _onScroll() {
@@ -41,14 +79,16 @@ class _ExpensesListState extends State<ExpensesList> {
 
   Future _fetchData() async {
     await new Future.delayed(new Duration(seconds: 2));
-    int lastIndex = expenses.length;
+    int lastIndex = _allExpenses.length;
 
     setState(() {
-      expenses.addAll(List.generate(
+      _allExpenses.addAll(List.generate(
           15,
-          (index) => new Expense(
-              index.toDouble(), "2021-", "mock" + index.toString())));
+          (index) => new Expense(index,
+              index.toDouble(), "2021-", "mock" + index.toString(), [ExpenseType.food])));
       isLoading = false;
+
+      _runFilter();
     });
   }
 
@@ -61,17 +101,17 @@ class _ExpensesListState extends State<ExpensesList> {
   Widget _buildList() {
     return ListView.builder(
         controller: _sc,
-        itemCount: isLoading ? expenses.length + 1 : expenses.length,
+        itemCount: isLoading ? _filteredExpenses.length + 1 : _filteredExpenses.length,
         itemBuilder: (context, index) {
-          if (expenses.length == index)
+          if (_filteredExpenses.length == index)
             return Center(
                 child: CircularProgressIndicator(
               color: Colors.black38,
             ));
           return ExpenseTile(
-            name: expenses[index].name,
-            date: expenses[index].date,
-            price: expenses[index].price,
+            name: _filteredExpenses.values.elementAt(index).name,
+            date: _filteredExpenses.values.elementAt(index).date,
+            price: _filteredExpenses.values.elementAt(index).price,
             onTap: () {},
           );
         });
@@ -150,6 +190,20 @@ class _ExpensesListState extends State<ExpensesList> {
                   : Colors.black38)),
       onSelected: (bool value) {
         setState(() {
+          if (value) {
+            _openedFilters = _openedFilters.toList();
+            _openedFilters.add(_filter[index]);
+          } else {
+            _openedFilters = _openedFilters.toList();
+            _openedFilters.remove(_filter[index]);
+          }
+          _runFilter();
+
+          if(_filteredExpenses.isEmpty) {
+            isLoading = true;
+            _fetchData();
+          }
+
           _selectedFilters[index] = value;
         });
       },
@@ -178,7 +232,12 @@ class _ExpensesListState extends State<ExpensesList> {
     List<Expense> l = List.empty();
 
     for (int i = 0; i < 10; i++) {
-      l.add(new Expense(i.toDouble(), "2021-", "mock" + i.toString()));
+      if (i % 2 == 0) {
+        l.add(new Expense(i, i.toDouble(), "2021-", "mock" + i.toString(), [ExpenseType.food]));
+      } else {
+        l.add(new Expense(i, i.toDouble(), "2021-", "mock" + i.toString(), [ExpenseType.fun]));
+      }
+
     }
 
     return Future.delayed(

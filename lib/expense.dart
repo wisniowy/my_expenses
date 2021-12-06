@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:my_expenses/expenses_types.dart';
 
 @immutable
 class Expense {
-  Expense(this.price, this.date, this.name);
+  Expense(this.id, this.price, this.date, this.name, this.types);
 
+  final int id;
   final double price;
   final String date;
   final String name;
+  final List<ExpenseType> types;
 }
