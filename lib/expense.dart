@@ -7,7 +7,7 @@ class Expense {
 
   final int id;
   final double price;
-  final String date;
+  final DateTime date;
   final String name;
   final List<ExpenseType> types;
 }
