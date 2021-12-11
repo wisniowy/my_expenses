@@ -1,4 +1,6 @@
+import 'package:edge_detection/edge_detection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:my_expenses/tabs/expenses_list.dart';
 
 import 'expandable_fab.dart';
@@ -47,9 +49,32 @@ class _MyHomePageState extends State<MyHomePage> {
     PlaceholderWidget(Colors.green)
   ];
 
+  String? _imagePath;
+
   void onTabTapped(int index) {
     setState(() {
       _selectedIdx = index;
+    });
+  }
+
+  Future<void> _getImage() async {
+    String? imagePath;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
+    try {
+      imagePath = (await EdgeDetection.detectEdge);
+      print("$imagePath");
+    } on PlatformException catch (e) {
+      imagePath = e.toString();
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _imagePath = imagePath;
     });
   }
 
@@ -65,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: const Icon(Icons.edit),
           ),
           ActionButton(
-            onPressed: () => {},
+            onPressed: () => {_getImage()},
             icon: const Icon(Icons.photo_camera_rounded),
           ),
         ]),

@@ -32,8 +32,8 @@ dependencies:
 
   syncfusion_flutter_datepicker: ^19.3.56
   intl: ^0.17.0
-  document_scanner_flutter: ^0.2.5
-
+  edge_detection:
+      git: https://github.com/sawankumarbundelkhandi/edge_detection.git
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
