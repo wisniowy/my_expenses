@@ -1,7 +1,7 @@
 import 'package:edge_detection/edge_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:my_expenses/tabs/expenses_list.dart';
+import 'package:my_expenses/tabs/expenses_list/expenses_list.dart';
 
 import 'expandable_fab.dart';
 import 'nav_bar.dart';
@@ -26,12 +26,13 @@ class MyApp extends StatelessWidget {
         // dialogBackgroundColor: Colors.white, //Background color
         colorScheme:  ColorScheme.fromSwatch().copyWith(
           primary: Colors.black45,
-          secondary: Colors.red,
+          secondary: const Color(0xffFF8527),
           onSurface: Colors.white38,
           onPrimary: const Color(0xffFF8527).withOpacity(0.7),
           onBackground: Colors.black45
 
-        ), dialogBackgroundColor: Colors.black,
+        ),
+        dialogBackgroundColor: Colors.black87,
         highlightColor: const Color(0xffFF8527),
       // theme: ThemeData(
       //     primaryColor: const Color(0xffFF8527),

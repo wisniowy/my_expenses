@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
-import 'package:my_expenses/expense.dart';
-import 'package:my_expenses/expenses_types.dart';
+import 'package:my_expenses/model/expense/expense.dart';
+import 'package:my_expenses/model/expense/expenses_types.dart';
 
 import 'expense_page.dart';
 
@@ -156,7 +156,10 @@ class _ExpensesListState extends State<ExpensesList> {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ExpensePage(expense: _filteredExpenses.values.elementAt(index),),
+                    builder: (BuildContext context) =>
+                        ExpensePage(expense: _filteredExpenses.values.elementAt(index), onDelete: () {
+                          resetExpenses();
+                        },),
                     fullscreenDialog: true,
                   ),
                 );
@@ -330,6 +333,17 @@ void dateTimeRangePicker() async {
     );
   }
 
+  void resetExpenses() {
+    setState(() {
+      _allExpenses.clear();
+      _filteredExpenses.clear();
+      isLoading = true;
+    });
+
+    _fetchData();
+  }
+
+
   Future<List<Expense>> getMock() {
     List<Expense> l = List.empty();
 
@@ -349,6 +363,7 @@ void dateTimeRangePicker() async {
     );
   }
 }
+
 
 class ExpenseTile extends StatelessWidget {
   final String name;

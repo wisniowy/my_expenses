@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_expenses/expenses_types.dart';
+import 'package:my_expenses/model/expense/expenses_types.dart';
 
 @immutable
 class Expense {
