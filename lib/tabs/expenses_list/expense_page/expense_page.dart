@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:my_expenses/tabs/expenses_list/photo_view_page.dart';
+import 'package:my_expenses/tabs/expenses_list/expense_page/photo_view_page.dart';
 import 'package:my_expenses/utils/expense/expense_text_form.dart';
 import 'dart:math';
 
-import '../../model/expense/expense.dart';
+import '../../../model/expense/expense.dart';
 import 'expense_delete_dialog.dart';
 
 class ExpensePage extends StatefulWidget {
