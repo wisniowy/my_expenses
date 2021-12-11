@@ -20,10 +20,34 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-          primaryColor: const Color(0xffFF8527),
-          backgroundColor: const Color(0xffFF8527),
-          brightness: Brightness.dark,
+      theme: ThemeData.dark().copyWith(
+        primaryColor: const Color(0xffFF8527), //Head background
+        // : Colors.red, //selection color
+        // dialogBackgroundColor: Colors.white, //Background color
+        colorScheme:  ColorScheme.fromSwatch().copyWith(
+          primary: Colors.black45,
+          secondary: Colors.red,
+          onSurface: Colors.white38,
+          onPrimary: const Color(0xffFF8527).withOpacity(0.7),
+          onBackground: Colors.black45
+
+        ), dialogBackgroundColor: Colors.black,
+        highlightColor: const Color(0xffFF8527),
+      // theme: ThemeData(
+      //     primaryColor: const Color(0xffFF8527),
+      //     backgroundColor: const Color(0xffFF8527),
+      //     brightness: Brightness.dark, //Selection color
+      //   highlightColor: const Color(0xffFF8527),
+      //   splashColor: const Color(0xffFF8527),
+      //   textSelectionTheme: TextSelectionThemeData(selectionColor: const Color(0xffFF8527)),
+        // colorScheme: ColorScheme.fromSwatch().copyWith(
+        //   secondary: Colors.red, // Your accent color
+        //   primary: const Color(0xffFF8527),
+        //   brightness: Brightness.dark,
+        //   background:  const Color(0xffFF8527),
+        //   onBackground: Colors.black45
+        // ),
+        // colorScheme: ColorScheme.fromSwatch().copyWith(secondary: const Color(0xffFF8527)),
         // accentColor: Colors.black
         // primarySwatch: const Color(0xffFF8527),
       ),

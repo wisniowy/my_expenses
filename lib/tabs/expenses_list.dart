@@ -6,7 +6,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:my_expenses/expense.dart';
 import 'package:my_expenses/expenses_types.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import 'expense_page.dart';
 
@@ -65,12 +64,14 @@ class _ExpensesListState extends State<ExpensesList> {
       var startD = _selectedDateRange.start;
       var endD = _selectedDateRange.end;
       var tempDate = DateTime(date.year, date.month, date.day);
+      print(endD);
+      print(tempDate);
 
       if (tempDate.compareTo(startD) == 0 || tempDate.compareTo(endD) == 0) {
         return true;
       }
 
-      if (tempDate.compareTo(startD) > 0 && tempDate.compareTo(startD) < 0) {
+      if (tempDate.compareTo(startD) > 0 && tempDate.compareTo(endD) < 0) {
         return true;
       }
       return false;
@@ -80,8 +81,7 @@ class _ExpensesListState extends State<ExpensesList> {
 
   void _runFilter() {
     LinkedHashMap<int, Expense> resMap = new LinkedHashMap();
-    List<Expense> allExpensesAfterDateFilter = _allExpenses
-        .where((element) => _dateInSelectedRange(element.date))
+    List<Expense> allExpensesAfterDateFilter = _allExpenses.where((element) => _dateInSelectedRange(element.date))
         .toList();
 
     if (_openedFilters.isEmpty) {
@@ -214,77 +214,7 @@ class _ExpensesListState extends State<ExpensesList> {
               style: TextButton.styleFrom(
                   padding: EdgeInsets.only(left: 4, top: 0, bottom: 0)),
               onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        // title: Text(''),
-                        content: Container(
-                          width: MediaQuery.of(context).size.width * 0.6,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              getDateRangePicker(),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  InputChip(
-                                    label: Text(
-                                      "OK",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white38,
-                                      ),
-                                    ),
-                                    avatar: Icon(Icons.check,
-                                        size: 20, color: Colors.white54),
-                                    onPressed: () {
-                                      setState(() {
-                                        String startDate = DateFormat(_dateFormat)
-                                            .format(_selectedDateRange.start);
-                                        String endDate = DateFormat(_dateFormat)
-                                            .format(_selectedDateRange.end);
-                                        _dateLabel = startDate + " - " + endDate;
-                                        _isDateRangeSelected = true;
-                                        _runFilter();
-                                        if (_filteredExpenses.isEmpty) {
-                                          isLoading = true;
-                                          _fetchData();
-                                        }
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                  InputChip(
-                                    label: Text(
-                                      "Clear",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white38,
-                                      ),
-                                    ),
-                                    avatar: Icon(Icons.clear_rounded,
-                                        size: 20, color: Colors.white54),
-                                    onPressed: () {
-                                      setState(() {
-                                        _dateLabel = _defaultDateLabel;
-                                        _isDateRangeSelected = false;
-                                        _runFilter();
-                                        if (_filteredExpenses.isEmpty) {
-                                          isLoading = true;
-                                          _fetchData();
-                                        }
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    });
+                dateTimeRangePicker();
               },
               label: Text(_dateLabel,
                   style: TextStyle(color: Colors.white24, fontSize: 15)),
@@ -305,61 +235,50 @@ class _ExpensesListState extends State<ExpensesList> {
     );
   }
 
-  Widget getDateRangePicker() {
-    return Container(
-        height: 250,
-        child: Card(
-            child: SfDateRangePicker(
-                view: DateRangePickerView.month,
-                selectionMode: DateRangePickerSelectionMode.range,
-                onSelectionChanged: selectionChanged,
-                rangeSelectionColor:
-                    Theme.of(context).primaryColor.withOpacity(0.5),
-                startRangeSelectionColor: Theme.of(context).primaryColor,
-                endRangeSelectionColor: Theme.of(context).primaryColor,
-                todayHighlightColor:
-                    Theme.of(context).primaryColor.withOpacity(0.4),
-                selectionTextStyle: const TextStyle(
-                    color: Colors.black45, fontWeight: FontWeight.bold),
-                rangeTextStyle: const TextStyle(
-                  color: Colors.black45,
-                ),
-                selectionColor: Theme.of(context).primaryColor,
-                monthCellStyle: DateRangePickerMonthCellStyle(
-                  textStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
-                      color: Colors.white54),
-                  todayTextStyle: TextStyle(
-                      color: Theme.of(context).primaryColor.withOpacity(0.7)),
-                ),
-                yearCellStyle: DateRangePickerYearCellStyle(
-                  todayTextStyle: TextStyle(
-                      color: Theme.of(context).primaryColor.withOpacity(0.7)),
-                  textStyle: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
-                      color: Colors.white54),
-                ),
-                monthViewSettings: DateRangePickerMonthViewSettings(
-                  firstDayOfWeek: 1,
-                  viewHeaderStyle: DateRangePickerViewHeaderStyle(
-                      textStyle: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 17,
-                          color: Colors.white70)),
-                ))));
+void dateTimeRangePicker() async {
+  DateTimeRange? picked = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(DateTime.now().year - 5),
+    lastDate: DateTime(DateTime.now().year + 5),
+      builder: (context, child) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+                maxHeight: MediaQuery.of(context).size.height * 0.75,
+              ),
+              child: child,
+            )
+          ],
+        );
+      });
+
+  setState(() {
+    if (picked == null) {
+      _isDateRangeSelected = false;
+      _dateLabel = _defaultDateLabel;
+    } else {
+      _isDateRangeSelected = true;
+      _selectedDateRange = picked;
+      String startDate = DateFormat(_dateFormat)
+          .format(_selectedDateRange.start);
+      String endDate = DateFormat(_dateFormat)
+          .format(_selectedDateRange.end);
+      _dateLabel = startDate + " - " + endDate;
   }
 
-  void selectionChanged(DateRangePickerSelectionChangedArgs args) {
-    _selectedDateRange = DateTimeRange(
-        start: args.value.startDate,
-        end: args.value.endDate ?? args.value.startDate);
+    _runFilter();
+    if (_filteredExpenses.isEmpty) {
+      isLoading = true;
+      _fetchData();
+    }
 
-    SchedulerBinding.instance!.addPostFrameCallback((duration) {
-      setState(() {});
-    });
-  }
+  });
+}
+
+
 
   FilterChip _createFilterChip(int index) {
     return FilterChip(
@@ -497,4 +416,26 @@ class ExpenseTile extends StatelessWidget {
       iconColor: Theme.of(context).primaryColor,
     );
   }
+}
+
+
+class CustomTheme extends Theme {
+  //Primary Blue: #335C81 (51, 92, 129)
+  //Light Blue:   #74B3CE (116, 179, 206)
+  //Yellow:       #FCA311 (252, 163, 17)
+  //Red:          #E15554 (255, 85, 84)
+  //Green:        #3BB273 (59, 178, 115)
+
+  CustomTheme(Widget child)
+      : super(
+    child: child,
+    data: new ThemeData(
+      primaryColor: const Color(0xffFF8527),
+      // accentColor: yellow,
+      cardColor: Colors.black45,
+      backgroundColor: Colors.black45,
+      highlightColor: const Color(0xffFF8527),
+      splashColor: const Color(0xffFF8527),
+    ),
+  );
 }
