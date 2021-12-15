@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_expenses/services/app_api.dart';
+import 'package:my_expenses/services/locator.dart';
 import 'package:my_expenses/tabs/expenses_list/expense_page/photo_view_page.dart';
 import 'package:my_expenses/utils/expense/expense_text_form.dart';
 import 'dart:math';
@@ -19,6 +21,7 @@ class ExpensePage extends StatefulWidget {
 }
 
 class _ExpensePageState extends State<ExpensePage> {
+  final _apiService = locator<Api>();
   bool _imageLoading = true;
   bool _imageAvailable = false;
   Image? _image;
@@ -45,20 +48,14 @@ class _ExpensePageState extends State<ExpensePage> {
   }
 
   Future<void> _downloadImage() async {
-    await Future.delayed(
-      const Duration(seconds: 2),
-    );
-    bool flag = rng.nextBool();
+    Image? image = await _apiService.getImage(10, 10);
 
     setState(() {
       _imageLoading = false;
 
-      if (flag) {
+      if (image != null) {
         _imageAvailable = true;
-        _image = Image.asset(
-          'assets/paragon5.png',
-          fit: BoxFit.fitWidth,
-        );
+        _image = image;
       } else {
         _imageAvailable = false;
       }
@@ -116,7 +113,7 @@ class _ExpensePageState extends State<ExpensePage> {
       Navigator.push(
         context,
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => PhotoViewPage(),
+          builder: (BuildContext context) => PhotoViewPage(file: _image!.image),
           fullscreenDialog: true,
         ),
       );
@@ -146,6 +143,7 @@ class _ExpensePageState extends State<ExpensePage> {
           initialValue: initialValue,
           icon: iconData,
           enabled: false,
+          onSaved: () {},
         ));
   }
 

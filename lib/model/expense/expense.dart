@@ -10,4 +10,9 @@ class Expense {
   final DateTime date;
   final String name;
   final List<ExpenseType> types;
+
+  @override
+  String toString() {
+    return "Expense(name=($name), price=($price), date=($date), types=($types))";
+  }
 }

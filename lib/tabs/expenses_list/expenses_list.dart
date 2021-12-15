@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_expenses/model/expense/expense.dart';
 import 'package:my_expenses/model/expense/expenses_types.dart';
+import 'package:my_expenses/services/app_api.dart';
+import 'package:my_expenses/services/locator.dart';
 
 import 'expense_page/expense_page.dart';
 import 'expense_tile.dart';
@@ -17,13 +19,12 @@ class ExpensesList extends StatefulWidget {
 }
 
 class _ExpensesListState extends State<ExpensesList> {
-  ScrollController _sc = new ScrollController();
-  List<Expense> _allExpenses = List.generate(
-      15,
-      (index) => new Expense(index, index.toDouble(), DateTime.now(),
-          "mock" + index.toString(), [ExpenseType.fun]));
+  final ScrollController _sc = ScrollController();
+  final _apiService = locator<Api>();
 
-  LinkedHashMap<int, Expense> _filteredExpenses = LinkedHashMap();
+
+  late List<Expense> _allExpenses;
+  late LinkedHashMap<int, Expense> _filteredExpenses = LinkedHashMap();
 
   final List<ExpenseType> _filter = [
     ExpenseType.food,
@@ -44,11 +45,18 @@ class _ExpensesListState extends State<ExpensesList> {
   bool _isDateRangeSelected = false;
   static String _dateFormat = 'dd/MM/yyyy';
 
+  int pageNumber = 0;
+
+  static int pageSize = 20;
+
   @override
   void initState() {
-    _buildExpenseMap(_allExpenses);
-    _sc.addListener(_onScroll);
     super.initState();
+    _allExpenses = [];
+    // isLoading = true;
+    _fetchData();
+    // _buildExpenseMap(_allExpenses);
+    _sc.addListener(_onScroll);
   }
 
   @override
@@ -104,12 +112,10 @@ class _ExpensesListState extends State<ExpensesList> {
   }
 
   Future _fetchData() async {
-    await new Future.delayed(new Duration(seconds: 2));
+    List<Expense> expenses = await _apiService.getExpenses(0, pageSize, pageNumber);
+    pageNumber = pageNumber + 1;
     setState(() {
-      _allExpenses.addAll(List.generate(
-          15,
-          (index) => new Expense(index, index.toDouble(), DateTime.now(),
-              "mock" + index.toString(), [ExpenseType.food])));
+      _allExpenses.addAll(expenses);
       isLoading = false;
 
       _runFilter();
@@ -166,7 +172,7 @@ class _ExpensesListState extends State<ExpensesList> {
     DateTimeRange? picked = await showDateRangePicker(
         context: context,
         firstDate: DateTime(DateTime.now().year - 5),
-        lastDate: DateTime(DateTime.now().year + 5),
+        lastDate: DateTime.now(),
         builder: (context, child) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -1,12 +1,18 @@
+import 'dart:io';
+
 import 'package:edge_detection/edge_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_expenses/services/locator.dart';
+import 'package:my_expenses/tabs/expenses_list/expense_add/expense_add_page.dart';
+import 'package:my_expenses/tabs/expenses_list/expense_add/ocr_add_page.dart';
 import 'package:my_expenses/tabs/expenses_list/expenses_list.dart';
 
 import 'expandable_fab.dart';
 import 'nav_bar.dart';
 
 void main() {
+  setupLocator();
   runApp(const MyApp());
 }
 
@@ -25,7 +31,7 @@ class MyApp extends StatelessWidget {
         // : Colors.red, //selection color
         // dialogBackgroundColor: Colors.white, //Background color
         colorScheme:  ColorScheme.fromSwatch().copyWith(
-          primary: Colors.black45,
+          primary: Colors.black26,
           secondary: const Color(0xffFF8527),
           onSurface: Colors.white38,
           onPrimary: const Color(0xffFF8527).withOpacity(0.7),
@@ -68,6 +74,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIdx = 1;
 
+
+  @override
+  void initState() {
+    super.initState();
+  }
   final List _children = [
     PlaceholderWidget(Colors.white),
     ExpensesList(),
@@ -88,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // We also handle the message potentially returning null.
     try {
       imagePath = (await EdgeDetection.detectEdge);
-      print("$imagePath");
+
     } on PlatformException catch (e) {
       imagePath = e.toString();
     }
@@ -98,9 +109,16 @@ class _MyHomePageState extends State<MyHomePage> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
-    setState(() {
-      _imagePath = imagePath;
-    });
+    if(_imagePath == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => OcrAddPage(image: Image(fit: BoxFit.fitWidth, image: FileImage(File(imagePath!)))),
+        fullscreenDialog: true,
+      ),
+    );
+
   }
 
   @override
@@ -111,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
             distance: 70.0,
             children: [
             ActionButton(
-            onPressed: () => {},
+            onPressed: () => {_onManualEdit()},
             icon: const Icon(Icons.edit),
           ),
           ActionButton(
@@ -140,6 +158,16 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ));
+  }
+
+  _onManualEdit() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => ExpenseAddPage(onAccept: () {},),
+        fullscreenDialog: true,
+      ),
+    );
   }
 }
 

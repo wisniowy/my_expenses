@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class PhotoViewPage extends StatefulWidget {
-  const PhotoViewPage({Key? key}) : super(key: key);
+  const PhotoViewPage({Key? key, required this.file}) : super(key: key);
+
+  final ImageProvider file;
 
   @override
   _PhotoViewPageState createState() => _PhotoViewPageState();
@@ -24,7 +28,7 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
         // title: Text(widget.expense.name),
       ),
       body: PhotoView(
-        imageProvider: AssetImage("assets/paragon5.png"),
+        imageProvider: widget.file,
       ),
     );
   }

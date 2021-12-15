@@ -20,7 +20,7 @@ class ExpenseTile extends StatelessWidget {
     return ListTileTheme(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.black38,
+          backgroundColor: Colors.white12,
           radius: 15,
           child: Icon(Icons.attach_money, color: Theme.of(context).primaryColor.withOpacity(0.5),),),
         title: Row(
