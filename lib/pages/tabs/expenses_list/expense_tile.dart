@@ -31,16 +31,17 @@ class ExpenseTile extends StatelessWidget {
               textScaleFactor: 1.2,),
             const SizedBox(width: 15.0),
             const Text("PLN", textScaleFactor: 0.9,),
+            // Container(
+            //     decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey,),
+            //     child: const Padding(padding: EdgeInsets.symmetric(horizontal: 12),
+            //       child: SizedBox(width: 4, height: 4),)),
+            // Text(date),
           ],
         ),
         subtitle: Row(
           children: [
             Text(name),
-            Container(
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey,),
-                child: const Padding(padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: SizedBox(width: 4, height: 4),)),
-            Text(date),
+
           ],
         ),
         trailing: const Icon(Icons.arrow_right, color: Colors.white38),

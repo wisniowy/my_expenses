@@ -23,6 +23,7 @@ class ExpenseTextForm extends StatelessWidget {
       keyboardType: textInputType,
       onSaved: (value) {onSaved(value);},
       onFieldSubmitted: (value) {onSaved(value);},
+      onChanged: (value) {onSaved(value);},
       style: TextStyle(color: Colors.white70),
       cursorColor: Theme.of(context).primaryColor.withOpacity(0.6),
       initialValue: initialValue,

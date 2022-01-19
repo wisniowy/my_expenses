@@ -1,13 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_expenses/model/expense/expense.dart';
+import 'package:my_expenses/pages/tabs/expenses_list/expense_page/photo_view_page.dart';
 import 'package:my_expenses/services/app_api.dart';
+import 'package:my_expenses/services/firestore.dart';
 import 'package:my_expenses/services/locator.dart';
-import 'package:my_expenses/tabs/expenses_list/expense_page/photo_view_page.dart';
 import 'package:my_expenses/utils/expense/expense_text_form.dart';
+import 'package:provider/src/provider.dart';
 import 'dart:math';
 
-import '../../../model/expense/expense.dart';
 import 'expense_delete_dialog.dart';
 
 class ExpensePage extends StatefulWidget {
@@ -36,7 +38,8 @@ class _ExpensePageState extends State<ExpensePage> {
     super.initState();
     _downloadImage();
 
-    onDeleteAccept = () {
+    onDeleteAccept = () async {
+      await context.read<FlutterFireStoreService>().removeExpense(widget.expense);
       widget.onDelete();
       Navigator.pop(context);
       Navigator.pop(context);
@@ -48,7 +51,7 @@ class _ExpensePageState extends State<ExpensePage> {
   }
 
   Future<void> _downloadImage() async {
-    Image? image = await _apiService.getImage(10, 10);
+    Image? image = await context.read<FlutterFireStoreService>().getImage(widget.expense.imageRef);
 
     setState(() {
       _imageLoading = false;
@@ -71,7 +74,7 @@ class _ExpensePageState extends State<ExpensePage> {
         actionsIconTheme: IconThemeData(color: Theme.of(context).primaryColor.withOpacity(0.7)),
         titleTextStyle: TextStyle(color: Colors.white38, fontSize: 15),
         toolbarTextStyle: TextStyle(color: Colors.white38),
-        actions: [
+        actions: _imageLoading ? [] : [
           buildDeleteButton(context),
         ],
         title: Text(widget.expense.name),

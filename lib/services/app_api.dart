@@ -16,9 +16,10 @@ class Api {
   Future<List<Expense>> getExpenses(int userId, int pageSize, int pageNumber) async {
     await new Future.delayed(new Duration(seconds: 2));
     print(pageNumber);
-    List<Expense> allExpenses = List.generate(
-        pageSize, (index) => new Expense(index, index.toDouble(), DateTime.now(),
-            "mock" + index.toString(), [ExpenseType.fun]));
+    List<Expense> allExpenses = [];
+        // List.generate(
+        // pageSize, (index) => new Expense(index, index.toDouble(), DateTime.now(),
+        //     "mock" + index.toString(), [ExpenseType.fun]));
 
     return allExpenses;
   }

@@ -6,13 +6,18 @@ import 'package:intl/intl.dart';
 import 'package:my_expenses/model/expense/expense.dart';
 import 'package:my_expenses/model/expense/expenses_types.dart';
 import 'package:my_expenses/services/app_api.dart';
+import 'package:my_expenses/services/firestore.dart';
 import 'package:my_expenses/services/locator.dart';
+import 'package:provider/src/provider.dart';
+import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 
 import 'expense_page/expense_page.dart';
 import 'expense_tile.dart';
 
 class ExpensesList extends StatefulWidget {
-  const ExpensesList({Key? key}) : super(key: key);
+  const ExpensesList({Key? key, required this.userId}) : super(key: key);
+
+  final String userId;
 
   @override
   State<ExpensesList> createState() => _ExpensesListState();
@@ -20,11 +25,9 @@ class ExpensesList extends StatefulWidget {
 
 class _ExpensesListState extends State<ExpensesList> {
   final ScrollController _sc = ScrollController();
-  final _apiService = locator<Api>();
-
 
   late List<Expense> _allExpenses;
-  late LinkedHashMap<int, Expense> _filteredExpenses = LinkedHashMap();
+  late LinkedHashMap<String, Expense> _filteredExpenses = LinkedHashMap();
 
   final List<ExpenseType> _filter = [
     ExpenseType.food,
@@ -47,16 +50,11 @@ class _ExpensesListState extends State<ExpensesList> {
 
   int pageNumber = 0;
 
-  static int pageSize = 20;
-
   @override
   void initState() {
     super.initState();
     _allExpenses = [];
-    // isLoading = true;
     _fetchData();
-    // _buildExpenseMap(_allExpenses);
-    _sc.addListener(_onScroll);
   }
 
   @override
@@ -94,56 +92,97 @@ class _ExpensesListState extends State<ExpensesList> {
     );
   }
 
-  void _buildExpenseMap(List<Expense> expenses) {
-    _filteredExpenses.clear();
-    for (Expense ex in expenses) {
-      _filteredExpenses.putIfAbsent(ex.id, () => ex);
-    }
-  }
-
-  _onScroll() {
-    if (_sc.offset >= _sc.position.maxScrollExtent &&
-        !_sc.position.outOfRange) {
-      setState(() {
-        isLoading = true;
-      });
-      _fetchData();
-    }
-  }
-
   Future _fetchData() async {
-    List<Expense> expenses = await _apiService.getExpenses(0, pageSize, pageNumber);
+    List<Expense> expenses = await context.read<FlutterFireStoreService>().getExpenses();
+    print(expenses);
     pageNumber = pageNumber + 1;
     setState(() {
       _allExpenses.addAll(expenses);
       isLoading = false;
-
       _runFilter();
     });
   }
 
   Widget _buildList() {
-    return ListView.builder(
-        controller: _sc,
-        itemCount:
-            isLoading ? _filteredExpenses.length + 1 : _filteredExpenses.length,
-        itemBuilder: (context, index) {
-          if (_filteredExpenses.length == index) {
-            return const Center(child: CircularProgressIndicator(color: Colors.black38,));
-          }
-          return Card(
-            color: Colors.black12,
-            child: ExpenseTile(
-              name: _filteredExpenses.values.elementAt(index).name,
-              date: DateFormat(_dateFormat)
-                  .format(_filteredExpenses.values.elementAt(index).date),
-              price: _filteredExpenses.values.elementAt(index).price,
-              onTap: () {
-                onExpenseTileTap(context, index);
-              },
-            ),
-          );
-        });
+    return StickyGroupedListView<Expense, String>(
+        stickyHeaderBackgroundColor: Colors.transparent,
+      elements: _filteredExpenses.values.toList(),
+      groupBy: (Expense element) => element.date.toString(),
+      groupSeparatorBuilder: (Expense element) => _createListGroupSeparator(element),
+      itemBuilder: (context, Expense element) => _createExpenseTile(element, context),
+      itemComparator: (element1, element2) => compareTo(element1, element2), // optional
+      itemScrollController: GroupedItemScrollController(), // optional
+      order: StickyGroupedListOrder.DESC, // optional
+    );
+  }
+
+  int compareTo(Expense element1, Expense element2) {
+    final DateTime firstDate = DateTime(element1.date.year, element1.date.month, element1.date.day);
+    final DateTime secondDate = DateTime(element2.date.year, element2.date.month, element2.date.day);
+
+    print(firstDate.toString());
+    print(secondDate.toString());
+
+    if (firstDate.year == secondDate.year && firstDate.month == secondDate.month && firstDate.day == secondDate.day) {
+      return 0;
+    }
+
+    return firstDate.compareTo(secondDate);
+  }
+
+  Row _createListGroupSeparator(Expense element) {
+    return Row(mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+          Expanded(
+            child: new Container(
+                margin: const EdgeInsets.only(left: 10.0, right: 20.0),
+                child: Divider(
+                  color: Colors.grey,
+                  height: 36,
+                )),
+          ),
+          Text(_getSeparatorText(element), style: TextStyle(color: Colors.grey),),
+          Expanded(
+            child: new Container(
+                margin: const EdgeInsets.only(left: 20.0, right: 10.0),
+                child: Divider(
+                  color: Colors.grey,
+                  height: 36,
+                )),
+          ),
+        ]);
+  }
+
+  String _getSeparatorText(Expense element) {
+    final today = DateTime.now();
+    if (element.date.day == today.day
+        && element.date.month == today.month
+        && element.date.year == today.year) {
+      return "Today";
+    }
+
+    final yesterday = DateTime.now().subtract(Duration(days:1));
+    if (element.date.day == yesterday.day
+        && element.date.month == yesterday.month
+        && element.date.year == yesterday.year) {
+      return "Yesterday";
+    }
+
+    return DateFormat(_dateFormat).format(element.date).toString();
+  }
+
+  Card _createExpenseTile(Expense element, BuildContext context) {
+    return Card(
+          color: Colors.black12,
+          child: ExpenseTile(
+            name: element.name,
+            date: DateFormat(_dateFormat)
+                .format(element.date),
+            price: element.price,
+            onTap: () {
+              onExpenseTileTap2(context, element);
+            },
+          ));
   }
 
   void onExpenseTileTap(BuildContext context, int index) {
@@ -153,6 +192,18 @@ class _ExpensesListState extends State<ExpensesList> {
         builder: (BuildContext context) =>
             ExpensePage(expense: _filteredExpenses.values.elementAt(index),
               onDelete: () {resetExpenses();}),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  void onExpenseTileTap2(BuildContext context, Expense expense) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            ExpensePage(expense: expense,
+                onDelete: () {resetExpenses();}),
         fullscreenDialog: true,
       ),
     );
@@ -277,7 +328,7 @@ class _ExpensesListState extends State<ExpensesList> {
   }
 
   void _runFilter() {
-    LinkedHashMap<int, Expense> resMap = LinkedHashMap();
+    LinkedHashMap<String, Expense> resMap = LinkedHashMap();
     List<Expense> allExpensesAfterDateFilter = _allExpenses.where((element) => _dateInSelectedRange(element.date))
         .toList();
 
@@ -291,7 +342,7 @@ class _ExpensesListState extends State<ExpensesList> {
 
     for (ExpenseType expenseType in _openedFilters) {
       List<Expense> result = allExpensesAfterDateFilter
-          .where((element) => element.types.contains(expenseType))
+          .where((element) => element.type == expenseType)
           .toList();
 
       for (Expense ex in result) {
@@ -310,25 +361,5 @@ class _ExpensesListState extends State<ExpensesList> {
     });
 
     _fetchData();
-  }
-
-
-  Future<List<Expense>> getMock() {
-    List<Expense> l = List.empty();
-
-    for (int i = 0; i < 10; i++) {
-      if (i % 2 == 0) {
-        l.add(new Expense(i, i.toDouble(), DateTime.now(),
-            "mock" + i.toString(), [ExpenseType.food]));
-      } else {
-        l.add(new Expense(i, i.toDouble(), DateTime.now(),
-            "mock" + i.toString(), [ExpenseType.fun]));
-      }
-    }
-
-    return Future.delayed(
-      const Duration(seconds: 2),
-      () => l,
-    );
   }
 }
